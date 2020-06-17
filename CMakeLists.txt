@@ -6,6 +6,7 @@ find_package(GLEW REQUIRED)
 find_package(OpenGl REQUIRED)
 
 add_subdirectory(lib/glfw)
+add_subdirectory(lib/glew/build/cmake)
 
 
 if(WIN32)
@@ -16,5 +17,8 @@ else()
 		"-lGL -lGLU -lX11")
 endif()
 add_executable(video-app src/main.cpp)
-target_link_libraries(video-app glfw ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${EXTRA_LIBS})
+#target_link_libraries(video-app glfw glew ${OPENGL_LIBRARIES} ${EXTRA_LIBS})
+
+target_link_libraries(video-app glfw ${OPENGL_LIBRARIES}  ${GLEW_LIBRARIES} ${EXTRA_LIBS})
+
 include_directories(video-app ${GLEW_INCLUDE_DIRS})

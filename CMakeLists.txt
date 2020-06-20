@@ -6,7 +6,7 @@ find_package(GLEW REQUIRED)
 find_package(OpenGl REQUIRED)
 
 add_subdirectory(lib/glfw)
-add_subdirectory(lib/glew/build/cmake)
+#add_subdirectory(lib/glew/build/cmake)
 
 
 if(WIN32)

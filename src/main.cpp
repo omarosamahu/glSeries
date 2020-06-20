@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
-
+#include <vector>
 struct ShaderSrc
 {
 	std::string vertexShader;
@@ -47,9 +47,26 @@ unsigned int compileShader(int type,const std::string& source) {
 	const char* src = source.c_str();
 	glShaderSource(id, 1, &src, nullptr);
 	glCompileShader(id);
-
+	// Shader checking
+	int result;
+	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+	if (result == GL_FALSE) {
+		int length;
+		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		char* msg = new char[length];
+		std::vector<char> vec;
+		vec.resize(length);
+		glGetShaderInfoLog(id, length, &length, msg);
+		std::cout << "Failed to compile " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") 
+			<< " shader" << std::endl;
+		std::cout << msg << "\n";
+		glDeleteShader(id);
+		return 0;
+	}
 	return id;
 }
+
+
 unsigned int createBuffer(const std::string& vertexShader, const std::string& fragmentShader) {
 		
 	unsigned int  program = glCreateProgram();
@@ -62,6 +79,8 @@ unsigned int createBuffer(const std::string& vertexShader, const std::string& fr
 	glLinkProgram(program);
 	glValidateProgram(program);
 	
+	//glDeleteShader(vs);
+	//glDeleteShader(fs);
 	return program;
 }
 
@@ -105,10 +124,9 @@ int main(int argc, char const *argv[])
 	/* Loop until the user closes the window */
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE ,sizeof(float) * 2,0);
-
-	ShaderSrc Shaders = getShaders(R"(E:\cpp-projects\video-app\res\shader\basic.shader)");
-	std::cout << "VERTEX" << std::endl << Shaders.vertexShader << std::endl;
-	std::cout << "Fragment" << std::endl << Shaders.fragmentShader << std::endl;
+	std::string shaderPath(R"(E:\cpp-projects\video-app\res\shader\basic.shader)");
+	ShaderSrc Shaders = getShaders(shaderPath);
+	
 	unsigned int shader = createBuffer(Shaders.vertexShader, Shaders.fragmentShader);
 	glUseProgram(shader);
 

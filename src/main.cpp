@@ -106,20 +106,30 @@ int main(int argc, char const *argv[])
 	}
 	printf("%s\n", glGetString(GL_VERSION));
     
-	float poses[6] = {
-		-0.5f,-0.5f,
-		 0.0f,-0.5f,
-		 -0.5f,0.5f
+	float poses[12] = {
+		-0.5f,-0.5f, // 0
+		 0.5f,-0.5f, // 1
+		 0.5f,0.5f,  // 2
+		 -0.5f,0.5f  // 3
 	};
 
-
+	unsigned int indcies[6] = {
+	0, 1 , 2,
+	0, 3 , 2
+	};
     // Create Handler for the buffer
     GLuint handler;
     // Create one buffer and give me the 
 	glGenBuffers(1, &handler);
 	glBindBuffer(GL_ARRAY_BUFFER, handler);
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), poses, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), poses, GL_STATIC_DRAW);
     
+	GLuint ib;
+	// Create one buffer and give me the 
+	glGenBuffers(1, &ib);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(float), indcies, GL_STATIC_DRAW);
+
 	//glClearColor(1, 1, 1, 1);
 	/* Loop until the user closes the window */
 	glEnableVertexAttribArray(0);
@@ -135,7 +145,8 @@ int main(int argc, char const *argv[])
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
 

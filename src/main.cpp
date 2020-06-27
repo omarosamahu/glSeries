@@ -1,10 +1,11 @@
-#include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <vector>
+#include <VertexBuffer.h>
+#include <IndexBuffer.h>
 struct ShaderSrc
 {
 	std::string vertexShader;
@@ -72,7 +73,7 @@ unsigned int createBuffer(const std::string& vertexShader, const std::string& fr
 	unsigned int  program = glCreateProgram();
 	unsigned int vs = compileShader(GL_VERTEX_SHADER, vertexShader);
 	unsigned int fs = compileShader(GL_FRAGMENT_SHADER, fragmentShader);
-	//auto vs = glCompileShader()
+	
 
 	glAttachShader(program, vs);
 	glAttachShader(program, fs);
@@ -91,15 +92,20 @@ int main(int argc, char const *argv[])
         std::cout << "Couldn't initilize GLFW\n";
         return 1;
     }
-
-    window = glfwCreateWindow(640,480,"Hello opengl",NULL,NULL);
+	// Define Major and Minor version for opengl 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4.5);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4.5);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	
+	window = glfwCreateWindow(640,480,"Hello opengl",NULL,NULL);
     if(!window){
         std::cout << "Couldn't create window\n";
 		return EXIT_FAILURE;
     }
-
-    //// Create Buffer
+	
+    
 	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
 	if (glewInit() != GLEW_OK) {
 		std::cout << "Error initialize glew\n";
 		return EXIT_FAILURE;
@@ -117,12 +123,18 @@ int main(int argc, char const *argv[])
 	0, 1 , 2,
 	0, 3 , 2
 	};
-    // Create Handler for the buffer
-    GLuint handler;
+	// Create vertex array object
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	Impl::VertexBuffer vb(poses, 4 * 2 * sizeof(float));
+	// Create Handler for the buffer
+    //GLuint handler;
     // Create one buffer and give me the 
-	glGenBuffers(1, &handler);
-	glBindBuffer(GL_ARRAY_BUFFER, handler);
-	glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(float), poses, GL_STATIC_DRAW);
+	//glGenBuffers(1, &handler);
+	//glBindBuffer(GL_ARRAY_BUFFER, handler);
+	//glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), poses, GL_STATIC_DRAW);
     
 	GLuint ib;
 	// Create one buffer and give me the 
@@ -139,17 +151,37 @@ int main(int argc, char const *argv[])
 	
 	unsigned int shader = createBuffer(Shaders.vertexShader, Shaders.fragmentShader);
 	glUseProgram(shader);
+	// Uniform start here 
+	auto location = glGetUniformLocation(shader, "u_Color");
+	_ASSERT(location != -1);
+	glUniform4f(location, 0.3f, 0.2f, 0.8f, 1.0f);
+	 // unbind everything 
+	glBindVertexArray(0);
+	glUseProgram(0);
+	vb.unbind();
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	
 
+	float r = 0.0f;
+	float increament = 0;
 	while (!glfwWindowShouldClose(window))
 	{
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
+		glUseProgram(shader);
+		glUniform4f(location, r, 0.2f, 0.8f, 1.0f);
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ib);
+		
 
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		(r < 0.1) ? increament += 0.5f : increament -= 0.5f;
+		r += increament;
+		glUniform4f(location, r, 0.2f, 0.8f, 1.0f);
+		
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
-
+		
 		/* Poll for and process events */
 		glfwPollEvents();
 	}

@@ -16,9 +16,14 @@ else()
 	list(APPEND EXTRA_LIBS
 		"-lGL -lGLU -lX11")
 endif()
-add_executable(video-app src/main.cpp)
+add_executable(video-app src/main.cpp 
+						 src/Renderer.cpp
+						 src/VertexBuffer.cpp
+						 src/IndexBuffer.cpp)
 #target_link_libraries(video-app glfw glew ${OPENGL_LIBRARIES} ${EXTRA_LIBS})
 
 target_link_libraries(video-app glfw ${OPENGL_LIBRARIES}  ${GLEW_LIBRARIES} ${EXTRA_LIBS})
-
+target_include_directories(video-app 
+							PUBLIC
+							${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(video-app ${GLEW_INCLUDE_DIRS})
